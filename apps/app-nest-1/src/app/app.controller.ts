@@ -1,6 +1,8 @@
 import {
   Controller,
+  Get,
   Post,
+  StreamableFile,
   UploadedFile,
   UseInterceptors,
 } from '@nestjs/common';
@@ -9,6 +11,7 @@ import { diskStorage } from 'multer';
 import { extname, join } from 'path';
 import { v4 as uuidv4 } from 'uuid';
 import type { Express } from 'express';
+import { createReadStream } from 'fs';
 
 @Controller()
 export class AppController {
@@ -33,5 +36,16 @@ export class AppController {
   )
   uploadFile(@UploadedFile() file: Express.Multer.File) {
     return { message: 'File uploaded successfully!', file: file.filename };
+  }
+
+  @Get('download')
+  getFile(): StreamableFile {
+    const file = createReadStream(
+      join(process.cwd(), 'downloads', 'google.pdf'),
+    );
+    return new StreamableFile(file, {
+      type: 'application/pdf',
+      disposition: 'attachment; filename="google.pdf"',
+    });
   }
 }
